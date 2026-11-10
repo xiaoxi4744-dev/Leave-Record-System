@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Leave Record System</title>
+
+    <link rel="stylesheet" href="./css/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="Internet_icon.png">
+
+</head>
+
+<body>
+
+    <main class="container" id="top">
+
+        <!-- HEADER -->
+
+        <header class="header">
+
+            <div>
+                <span class="subtitle">LEAVE MANAGEMENT</span>
+                <h1>ระบบบันทึกการลา</h1>
+                <p>บันทึกและตรวจสอบประวัติการลาของบุคลากร</p>
+            </div>
+
+            <div class="header-actions">
+
+                <button type="button" id="openAllHistoryModal" class="btn-primary">
+                    ดูรายงานการลาทั้งหมด
+                </button>
+
+                <button type="button" id="openPersonModal" class="btn-secondary">
+                    ดูรายชื่อบุคลากร
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- APP NAVIGATION -->
+
+        <nav class="app-nav">
+
+            <a href="#top" class="nav-link">
+                <span>⌂</span>
+                <small>หน้าหลัก</small>
+            </a>
+
+            <a href="#leaveForm" class="nav-link">
+                <span>＋</span>
+                <small>บันทึกลา</small>
+            </a>
+
+            <a href="#historySearchCard" class="nav-link">
+                <span>▤</span>
+                <small>ประวัติลา</small>
+            </a>
+
+            <a href="#openPersonModal" class="nav-link">
+                <span>♙</span>
+                <small>บุคลากร</small>
+            </a>
+
+            <a href="#openAllHistoryModal" class="nav-link">
+                <span>▥</span>
+                <small>รายงาน</small>
+            </a>
+
+        </nav>
+
+        <!-- บันทึกข้อมูลการลา -->
+
+        <section class="card">
+
+            <h2>บันทึกข้อมูลการลา</h2>
+
+            <form id="leaveForm">
+
+                <div class="form-group">
+
+                    <label for="personSearch">ชื่อบุคคล</label>
+
+                    <div class="search-select">
+
+                        <input
+                            type="search"
+                            id="personSearch"
+                            placeholder="พิมพ์ชื่อบุคลากรเพื่อค้นหา..."
+                            autocomplete="off"
+                            required
+                        >
+
+                        <input type="hidden" id="personId">
+
+                        <div id="personSuggestions" class="suggestions" hidden></div>
+
+                    </div>
+
+                    <small class="input-hint">
+                        พิมพ์ชื่อเพื่อค้นหา หรือกดปุ่มดูรายชื่อบุคลากร
+                    </small>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="startDate">วันที่เริ่มลา</label>
+                    <input type="date" id="startDate" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="endDate">วันที่สิ้นสุดการลา</label>
+                    <input type="date" id="endDate" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="days">จำนวนวัน</label>
+
+                    <input
+                        type="number"
+                        id="days"
+                        min="1"
+                        step="1"
+                        placeholder="ระบบคำนวณอัตโนมัติ"
+                        readonly
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>ประเภทการลา</label>
+
+                    <div class="leave-types">
+
+                        <label class="leave-option">
+                            <input type="radio" name="leaveType" value="ลาป่วย" required>
+                            <span>ลาป่วย</span>
+                        </label>
+
+                        <label class="leave-option">
+                            <input type="radio" name="leaveType" value="ลากิจส่วนตัว">
+                            <span>ลากิจส่วนตัว</span>
+                        </label>
+
+                        <label class="leave-option">
+                            <input type="radio" name="leaveType" value="ลาคลอดบุตร">
+                            <span>ลาคลอดบุตร</span>
+                        </label>
+
+                        <label class="leave-option">
+                            <input type="radio" name="leaveType" value="ลาอุปสมบท">
+                            <span>ลาอุปสมบท</span>
+                        </label>
+
+                        <label class="leave-option">
+                            <input type="radio" name="leaveType" value="ลาไปราชการ">
+                            <span>ลาไปราชการ</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="reason">หมายเหตุ / เหตุผล</label>
+
+                    <textarea
+                        id="reason"
+                        rows="3"
+                        placeholder="ระบุเหตุผลการลา (ถ้ามี)"
+                    ></textarea>
+
+                </div>
+
+                <button type="submit" id="saveBtn" class="btn-primary">
+                    บันทึกข้อมูลการลา
+                </button>
+
+                <p id="formMessage"></p>
+
+            </form>
+
+        </section>
+
+        <!-- ค้นหาประวัติการลา -->
+
+        <section class="card history-search-card" id="historySearchCard">
+
+            <div class="history-search-content">
+
+                <div>
+                    <span class="subtitle">PERSONAL HISTORY</span>
+                    <h2>ค้นหาประวัติการลารายบุคคล</h2>
+                    <p>ค้นหาและตรวจสอบประวัติการลาของบุคลากรแต่ละคน</p>
+                </div>
+
+                <button type="button" id="openHistoryModal" class="btn-primary">
+                    ค้นหาประวัติการลา
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- POPUP จัดการบุคลากร -->
+
+        <div class="modal" id="personModal" hidden>
+
+            <div class="modal-backdrop" id="closeModalBackdrop"></div>
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <div>
+                        <span class="subtitle">PERSON DIRECTORY</span>
+                        <h2>จัดการรายชื่อบุคลากร</h2>
+                        <p id="personCount">กำลังโหลดข้อมูล...</p>
+                    </div>
+
+                    <button type="button" id="closePersonModal" class="btn-close">
+                        ✕
+                    </button>
+
+                </div>
+
+                <button type="button" id="openAddPerson" class="btn-primary add-person-btn">
+                    + เพิ่มบุคลากร
+                </button>
+
+                <div id="addPersonForm" class="add-person-form" hidden>
+
+                    <label for="newPersonName">ชื่อบุคลากร</label>
+
+                    <input
+                        type="text"
+                        id="newPersonName"
+                        placeholder="กรอกชื่อและนามสกุล"
+                        maxlength="150"
+                    >
+
+                    <label for="newPersonPosition">ตำแหน่ง</label>
+
+                    <select id="newPersonPosition" required>
+
+                        <option value="">-- เลือกตำแหน่ง --</option>
+
+                        <option value="ผอ.">ผู้อำนวยการ</option>
+                        <option value="รองผู้อำนวยการ">รองผู้อำนวยการ</option>
+                        <option value="ครูผู้ช่วยผู้อำนวยการ">ครูผู้ช่วยผู้อำนวยการ</option>
+                        <option value="ครู">ครู</option>
+                        <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                        <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+                        <option value="พนักงานราชการ">พนักงานราชการ</option>
+                        <option value="พนักงานธุรการ">พนักงานธุรการ</option>
+                        <option value="พัสดุ">พัสดุ</option>
+                        <option value="ลูกจ้างฯ">ลูกจ้างฯ</option>
+                        <option value="พนักงานบริการ">พนักงานบริการ</option>
+                        <option value="เจ้าหน้าที่ฯ">เจ้าหน้าที่ฯ</option>
+
+                    </select>
+
+                    <div class="person-form-actions">
+
+                        <button type="button" id="savePerson" class="btn-primary">
+                            บันทึก
+                        </button>
+
+                        <button type="button" id="cancelAddPerson" class="btn-secondary">
+                            ยกเลิก
+                        </button>
+
+                    </div>
+
+                    <p id="personMessage"></p>
+
+                </div>
+
+                <input
+                    type="search"
+                    id="modalSearch"
+                    placeholder="ค้นหาชื่อบุคลากร..."
+                >
+
+                <div id="modalPersonList" class="modal-person-list"></div>
+
+            </div>
+
+        </div>
+
+        <!-- POPUP ค้นหาประวัติ -->
+
+        <div class="modal" id="historySearchModal" hidden>
+
+            <div class="modal-backdrop" id="closeHistoryBackdrop"></div>
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <div>
+                        <span class="subtitle">SEARCH HISTORY</span>
+                        <h2>ค้นหาประวัติการลา</h2>
+                        <p>เลือกบุคลากรเพื่อดูประวัติการลา</p>
+                    </div>
+
+                    <button type="button" id="closeHistoryModal" class="btn-close">
+                        ✕
+                    </button>
+
+                </div>
+
+                <input
+                    type="search"
+                    id="historySearchInput"
+                    placeholder="พิมพ์ชื่อบุคลากรที่ต้องการค้นหา..."
+                >
+
+                <div id="historyPersonList" class="modal-person-list"></div>
+
+            </div>
+
+        </div>
+
+        <!-- POPUP รายงานการลาทั้งหมด -->
+
+        <div class="modal" id="allHistoryModal" hidden>
+
+            <div class="modal-backdrop" id="closeAllHistoryBackdrop"></div>
+
+            <div class="modal-content all-history-modal">
+
+                <div class="modal-header">
+
+                    <div>
+                        <span class="subtitle">ALL LEAVE REPORT</span>
+                        <h2>รายงานสรุปการลาของบุคลากร</h2>
+                        <p id="allHistoryDate">กำลังโหลดข้อมูล...</p>
+                    </div>
+
+                    <button type="button" id="closeAllHistoryModal" class="btn-close">
+                        ✕
+                    </button>
+
+                </div>
+
+                <div class="all-history-toolbar">
+
+                    <div>
+                        <strong>ข้อมูลสรุปการลาทั้งหมด</strong>
+                        <p>แสดงข้อมูลแยกตามตำแหน่งและรายเดือน</p>
+                    </div>
+
+                    <button type="button" id="downloadAllHistory" class="btn-download">
+                        ดาวน์โหลดข้อมูลทั้งหมด
+                    </button>
+
+                </div>
+
+                <div class="table-wrapper all-history-table-wrapper">
+
+                    <table id="allHistoryTable">
+
+                        <thead></thead>
+
+                        <tbody></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ประวัติการลารายบุคคล -->
+
+        <section class="card" id="historySection" hidden>
+
+            <div class="history-header">
+
+                <div>
+                    <span class="subtitle">PERSONAL HISTORY</span>
+                    <h2 id="historyName">ประวัติการลา</h2>
+                </div>
+
+                <div class="history-actions">
+
+                    <button type="button" id="downloadHistory" class="btn-download">
+                        ดาวน์โหลด Excel
+                    </button>
+
+                    <button type="button" id="closeHistory" class="btn-secondary">
+                        ปิด
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="summary-grid">
+
+                <div class="summary-box">
+                    <span>จำนวนครั้งที่ลา</span>
+                    <h3 id="totalTimes">0</h3>
+                </div>
+
+                <div class="summary-box">
+                    <span>จำนวนวันลารวม</span>
+                    <h3 id="totalDays">0</h3>
+                </div>
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>วันที่เริ่มลา</th>
+                            <th>วันที่สิ้นสุด</th>
+                            <th>ประเภท</th>
+                            <th>จำนวนวัน</th>
+                            <th>หมายเหตุ</th>
+                            <th>วันที่บันทึก</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="historyTable"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="./js/config.js"></script>
+    <script type="module" src="./js/app.js"></script>
+
+</body>
+
+</html>
