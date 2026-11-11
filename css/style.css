@@ -1720,3 +1720,58 @@ tbody tr:hover {
         padding-bottom: 90px;
     }
 }
+
+
+/* =========================================
+   EDIT LEAVE MODAL - FIX SCROLL
+========================================= */
+
+#editLeaveModal .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+    overscroll-behavior: contain;
+}
+
+#editLeaveModal .modal-header {
+    position: sticky;
+    top: -1px;
+    z-index: 10;
+    background: #fff;
+    padding-bottom: 12px;
+}
+
+#editLeaveModal #editLeaveForm {
+    padding-bottom: 5px;
+}
+
+#editLeaveModal .person-form-actions {
+    position: sticky;
+    bottom: -1px;
+    background: #fff;
+    padding: 12px 0 5px;
+    margin-top: 10px;
+    z-index: 5;
+}
+
+#editLeaveModal .person-form-actions button {
+    min-height: 44px;
+}
+
+@media (max-width: 650px) {
+    #editLeaveModal .modal-content {
+        max-height: 92vh;
+        padding: 18px 15px;
+    }
+
+    #editLeaveModal .person-form-actions {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    #editLeaveModal .person-form-actions button {
+        flex: 1;
+        min-width: 0;
+    }
+}

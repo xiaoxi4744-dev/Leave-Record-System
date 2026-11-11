@@ -388,6 +388,83 @@
 
         </div>
 
+        <!-- POPUP EDIT LEAVE RECORD -->
+
+<div class="modal" id="editLeaveModal" hidden>
+
+    <div class="modal-backdrop" id="closeEditLeaveBackdrop"></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <span class="subtitle">EDIT LEAVE RECORD</span>
+                <h2>แก้ไขข้อมูลการลา</h2>
+                <p>แก้ไขรายละเอียดประวัติการลา</p>
+            </div>
+
+            <button type="button" id="closeEditLeaveModal" class="btn-close">
+                ✕
+            </button>
+
+        </div>
+
+        <form id="editLeaveForm">
+
+            <div class="form-group">
+                <label for="editStartDate">วันที่เริ่มลา</label>
+                <input type="date" id="editStartDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editEndDate">วันที่สิ้นสุดการลา</label>
+                <input type="date" id="editEndDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editDays">จำนวนวัน</label>
+                <input type="number" id="editDays" min="1" readonly required>
+            </div>
+
+            <div class="form-group">
+                <label for="editLeaveType">ประเภทการลา</label>
+
+                <select id="editLeaveType" required>
+                    <option value="">-- เลือกประเภทการลา --</option>
+                    <option value="ลาป่วย">ลาป่วย</option>
+                    <option value="ลากิจส่วนตัว">ลากิจส่วนตัว</option>
+                    <option value="ลาคลอดบุตร">ลาคลอดบุตร</option>
+                    <option value="ลาอุปสมบท">ลาอุปสมบท</option>
+                    <option value="ลาไปราชการ">ลาไปราชการ</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editReason">หมายเหตุ / เหตุผล</label>
+                <textarea id="editReason" rows="3"></textarea>
+            </div>
+
+            <div class="person-form-actions">
+
+                <button type="submit" id="saveEditLeave" class="btn-primary">
+                    บันทึกการแก้ไข
+                </button>
+
+                <button type="button" id="cancelEditLeave" class="btn-secondary">
+                    ยกเลิก
+                </button>
+
+            </div>
+
+            <p id="editLeaveMessage"></p>
+
+        </form>
+
+    </div>
+
+</div>
+
         <!-- ประวัติการลารายบุคคล -->
 
         <section class="card" id="historySection" hidden>
@@ -439,6 +516,7 @@
                             <th>จำนวนวัน</th>
                             <th>หมายเหตุ</th>
                             <th>วันที่บันทึก</th>
+                            <th>จัดการบุคลากร</th>
                         </tr>
                     </thead>
 

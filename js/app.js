@@ -883,36 +883,57 @@ async function loadPersonHistory(person) {
 
     if (currentHistory.length === 0) {
         historyTable.innerHTML =
-            '<tr><td colspan="6" class="empty">ยังไม่มีประวัติการลา</td></tr>';
+            '<tr><td colspan="7" class="empty">ยังไม่มีประวัติการลา</td></tr>';
     } else {
         currentHistory.forEach(record => {
-            const row = document.createElement("tr");
+    const row = document.createElement("tr");
 
-            const values = [
-                formatDate(record.start_date),
-                formatDate(record.end_date),
-                record.leave_type,
-                `${record.days} วัน`,
-                record.reason || "-",
-                formatDateTime(record.created_at)
-            ];
+    const values = [
+        formatDate(record.start_date),
+        formatDate(record.end_date),
+        record.leave_type,
+        `${record.days} วัน`,
+        record.reason || "-",
+        formatDateTime(record.created_at)
+    ];
 
-            values.forEach(value => {
-                const cell = document.createElement("td");
+    values.forEach(value => {
+        const cell = document.createElement("td");
 
-                cell.textContent = value;
+        cell.textContent = value;
 
-                row.appendChild(cell);
-            });
-
-            historyTable.appendChild(row);
-        });
-    }
-
-    historySection.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+        row.appendChild(cell);
     });
+
+    const actionCell = document.createElement("td");
+
+    const editBtn = document.createElement("button");
+
+    editBtn.type = "button";
+    editBtn.className = "btn-secondary";
+    editBtn.textContent = "✏️ แก้ไข";
+
+    editBtn.addEventListener("click", () => {
+        openEditLeave(record);
+    });
+
+    const deleteBtn = document.createElement("button");
+
+    deleteBtn.type = "button";
+    deleteBtn.className = "person-delete-btn";
+    deleteBtn.textContent = "🗑️ ลบ";
+
+    deleteBtn.addEventListener("click", async () => {
+        await deleteLeaveRecord(record);
+    });
+
+    actionCell.append(editBtn, deleteBtn);
+
+    row.appendChild(actionCell);
+
+    historyTable.appendChild(row);
+});
+}
 }
 
 /* DOWNLOAD INDIVIDUAL HISTORY */
@@ -1571,5 +1592,229 @@ document.addEventListener("keydown", event => {
         closeAllHistoryReport();
     }
 });
+
+/* =========================================
+   EDIT & DELETE LEAVE RECORD
+========================================= */
+
+const editLeaveModal = document.getElementById("editLeaveModal");
+const editLeaveForm = document.getElementById("editLeaveForm");
+
+const editStartDate = document.getElementById("editStartDate");
+const editEndDate = document.getElementById("editEndDate");
+const editDays = document.getElementById("editDays");
+const editLeaveType = document.getElementById("editLeaveType");
+const editReason = document.getElementById("editReason");
+
+const saveEditLeave = document.getElementById("saveEditLeave");
+const editLeaveMessage = document.getElementById("editLeaveMessage");
+
+let currentEditingLeaveId = null;
+
+/* OPEN EDIT MODAL */
+
+function openEditLeave(record) {
+    currentEditingLeaveId = record.id;
+
+    editStartDate.value = record.start_date;
+    editEndDate.value = record.end_date;
+    editDays.value = record.days;
+    editLeaveType.value = record.leave_type;
+    editReason.value = record.reason || "";
+
+    editLeaveMessage.textContent = "";
+
+    editStartDate.setCustomValidity("");
+    editEndDate.setCustomValidity("");
+
+    editLeaveModal.hidden = false;
+    document.body.style.overflow = "hidden";
+}
+
+/* CLOSE EDIT MODAL */
+
+function closeEditLeave() {
+    editLeaveModal.hidden = true;
+
+    document.body.style.overflow = "";
+
+    currentEditingLeaveId = null;
+
+    editLeaveForm.reset();
+
+    editLeaveMessage.textContent = "";
+}
+
+document.getElementById("closeEditLeaveModal")
+    .addEventListener("click", closeEditLeave);
+
+document.getElementById("closeEditLeaveBackdrop")
+    .addEventListener("click", closeEditLeave);
+
+document.getElementById("cancelEditLeave")
+    .addEventListener("click", closeEditLeave);
+
+/* CALCULATE EDIT DAYS */
+
+function calculateEditLeaveDays() {
+    const start = editStartDate.value;
+    const end = editEndDate.value;
+
+    editEndDate.setCustomValidity("");
+
+    if (!start || !end) {
+        editDays.value = "";
+        return;
+    }
+
+    if (end < start) {
+        editDays.value = "";
+
+        editEndDate.setCustomValidity(
+            "วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มลา"
+        );
+
+        return;
+    }
+
+    editDays.value = getDateRangeDays(start, end);
+}
+
+editStartDate.addEventListener(
+    "change",
+    calculateEditLeaveDays
+);
+
+editEndDate.addEventListener(
+    "change",
+    calculateEditLeaveDays
+);
+
+/* UPDATE LEAVE RECORD */
+
+editLeaveForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    calculateEditLeaveDays();
+
+    const start = editStartDate.value;
+    const end = editEndDate.value;
+
+    if (!currentEditingLeaveId) {
+        editLeaveMessage.textContent = "ไม่พบรายการที่ต้องการแก้ไข";
+        return;
+    }
+
+    if (!start || !end || end < start) {
+        editLeaveMessage.textContent = "กรุณาตรวจสอบวันที่ลา";
+        editLeaveMessage.style.color = "#dc2626";
+        return;
+    }
+
+    if (!editLeaveType.value) {
+        editLeaveMessage.textContent = "กรุณาเลือกประเภทการลา";
+        editLeaveMessage.style.color = "#dc2626";
+        return;
+    }
+
+    const payload = {
+        start_date: start,
+        end_date: end,
+        days: Number(editDays.value),
+        leave_type: editLeaveType.value,
+        reason: editReason.value.trim() || null
+    };
+
+    saveEditLeave.disabled = true;
+    saveEditLeave.textContent = "กำลังบันทึก...";
+
+    try {
+        const { data, error } = await supabase
+            .from("leave_records")
+            .update(payload)
+            .eq("id", currentEditingLeaveId)
+            .select("id");
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data || data.length === 0) {
+            throw new Error(
+                "ไม่สามารถแก้ไขรายการได้ กรุณาตรวจสอบสิทธิ์การเข้าถึงข้อมูล"
+            );
+        }
+
+        const person = currentPerson;
+
+        closeEditLeave();
+
+        await loadPersonHistory(person);
+
+        alert("แก้ไขข้อมูลการลาสำเร็จ");
+
+    } catch (error) {
+        console.error("Update leave error:", error);
+
+        editLeaveMessage.textContent =
+            "แก้ไขไม่สำเร็จ: " + error.message;
+
+        editLeaveMessage.style.color = "#dc2626";
+
+    } finally {
+        saveEditLeave.disabled = false;
+        saveEditLeave.textContent = "บันทึกการแก้ไข";
+    }
+});
+
+/* DELETE LEAVE RECORD */
+
+async function deleteLeaveRecord(record) {
+    if (!currentPerson) {
+        alert("ไม่พบข้อมูลบุคลากร");
+        return;
+    }
+
+    const confirmed = confirm(
+        `ต้องการลบประวัติการลานี้ใช่หรือไม่?\n\n` +
+        `บุคลากร: ${currentPerson.full_name}\n` +
+        `ประเภท: ${record.leave_type}\n` +
+        `วันที่: ${formatDate(record.start_date)} - ${formatDate(record.end_date)}\n` +
+        `จำนวน: ${record.days} วัน\n\n` +
+        `การลบข้อมูลนี้ไม่สามารถย้อนกลับได้`
+    );
+
+    if (!confirmed) return;
+
+    try {
+        const { data, error } = await supabase
+            .from("leave_records")
+            .delete()
+            .eq("id", record.id)
+            .select("id");
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data || data.length === 0) {
+            throw new Error(
+                "ไม่พบรายการที่ต้องการลบ หรือไม่มีสิทธิ์ลบข้อมูล"
+            );
+        }
+
+        await loadPersonHistory(currentPerson);
+
+        alert("ลบประวัติการลาสำเร็จ");
+
+    } catch (error) {
+        console.error("Delete leave error:", error);
+
+        alert(
+            "ลบประวัติการลาไม่สำเร็จ: " + error.message
+        );
+    }
+    
+}
 
 loadPersons();
